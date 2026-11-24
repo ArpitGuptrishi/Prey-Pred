@@ -1,0 +1,111 @@
+PREDATOR-PREY PATHFINDING SIMULATION (UNITY)
+============================================
+
+A Unity (C#) project that visualizes A* and Dijkstra pathfinding on a 2D grid
+through a predator-prey chase. A predator hunts the prey using shortest-path
+search, while the prey continuously computes an escape route. Paths are drawn
+live on the grid so you can see how each algorithm behaves.
+
+
+FEATURES
+--------
+- Grid-based map with randomly generated wall obstacles
+- 8-directional movement (diagonal cost 14, straight cost 10)
+- A* and Dijkstra implementations, switchable at runtime
+- Predator chases the prey; prey flees to the farthest open point around it
+- Live path visualization (prey path in green, predator path in magenta,
+  walls in black)
+- Automatic scene restart when the prey is caught
+- Step-based simulation with adjustable speed
+
+
+PROJECT STRUCTURE
+-----------------
+Pathfinding.cs
+    Base A* implementation. Generates a grid with random walls and finds a
+    path between two fixed points. Visualized using Gizmos in the Scene view.
+
+AIPathfinding.cs
+    Predator-prey simulation using A*. The prey picks an escape target while
+    the predator chases it, one step at a time. Costs are reset before each
+    search to avoid stale data.
+
+AStarDijkstra.cs
+    Full version. Adds a TextMeshPro dropdown to switch between A* and
+    Dijkstra, a Space-to-start control, and scene restart on catch.
+
+
+HOW IT WORKS
+------------
+Cost calculation:
+- gCost: cost from the start cell
+- hCost: heuristic estimate to the goal (octile distance)
+- fCost: gCost + hCost for A*; gCost only for Dijkstra
+
+Simulation loop (each step):
+1. Read the predator and prey grid positions.
+2. The prey evaluates four candidate escape points (3 cells away in each
+   cardinal direction), skips walls, and picks the one farthest from the
+   predator.
+3. The prey and predator each run a path search.
+4. Both move one cell along their path.
+5. Tile colors are refreshed to show the current paths.
+
+
+GETTING STARTED
+---------------
+Requirements:
+- Unity 2021.3 LTS or newer (any version supporting TextMeshPro)
+- TextMeshPro package (needed for AStarDijkstra.cs)
+
+Setup:
+1. Clone the repository and open it in Unity, or copy the scripts into your
+   project's Assets folder.
+2. Create a Tile prefab: a 2D Sprite (square) with a SpriteRenderer.
+3. Create two GameObjects for the Predator and Prey (sprites or primitives).
+4. Create an empty GameObject and attach AStarDijkstra (or AIPathfinding).
+5. In the Inspector, assign:
+   - Predator and Prey transforms
+   - Tile Prefab
+   - Algorithm Dropdown (a TMP Dropdown from a UI Canvas, AStarDijkstra only)
+6. Position the camera to view the grid (default 10x10, around (5, 5) for an
+   orthographic camera).
+
+Running:
+1. Press Play.
+2. Choose A* or Dijkstra from the dropdown.
+3. Press Space to start the chase.
+4. When the predator catches the prey, the scene restarts with a new random
+   map.
+
+For Pathfinding.cs, tick Generate Path and Visualise Grid in the Inspector,
+then open the Scene view to see the Gizmo output.
+
+
+CONFIGURABLE PARAMETERS
+-----------------------
+Grid Width / Height : default 10  - number of cells on each axis
+Cell Width / Height : default 1   - size of each cell
+Step Delay          : default 0.5 - seconds between simulation steps
+
+The number of walls is set in GenerateGrid() (15 in the simulation scripts,
+40 in Pathfinding.cs).
+
+
+KNOWN LIMITATIONS
+-----------------
+- Walls are random, so the prey or predator can occasionally be boxed in.
+- Duplicate random wall positions are possible, so the actual wall count may
+  be lower than the configured value.
+- The open-list search is a linear scan (List), not a priority queue. This is
+  fine for small grids but slow for large ones.
+- Prey escape logic is greedy and short-sighted (a 3-cell lookahead).
+
+
+POSSIBLE IMPROVEMENTS
+---------------------
+- Replace the open list with a binary heap / priority queue
+- Smarter prey AI (flood-fill or Dijkstra maps for flee behavior)
+- Guarantee reachable maps after wall generation
+- Metrics display (nodes searched, path length) to compare A* vs Dijkstra
+- Smooth movement interpolation between cells
